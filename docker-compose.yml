@@ -10,9 +10,12 @@ services:
       DB_NAME: adivina
       DB_USER: adivina
       DB_PASSWORD: adivina
+      REDIS_HOST: redis
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   db:
     image: mysql:8.4
@@ -37,7 +40,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-       - redis_data:/data
+      - redis_data:/data
 
 volumes:
   db_data:

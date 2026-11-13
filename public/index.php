@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Database;
+use App\Leaderboard;
+use App\RedisClient;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -41,12 +43,19 @@ $app->post('/scores', function (Request $request, Response $response) {
     $stmt = $db->prepare('INSERT INTO scores (player, points, hits) VALUES (:player, :points, :hits)');
     $stmt->execute(['player' => $player, 'points' => $points, 'hits' => $hits]);
 
+    (new Leaderboard(RedisClient::connect()))->submit($player, $points);
+
     return json($response, [
         'id' => (int) $db->lastInsertId(),
         'player' => $player,
         'points' => $points,
         'hits' => $hits,
     ], 201);
+});
+
+$app->get('/leaderboard', function (Request $request, Response $response) {
+    $leaderboard = new Leaderboard(RedisClient::connect());
+    return json($response, $leaderboard->top());
 });
 
 $app->get('/players/{name}', function (Request $request, Response $response, array $args) {
