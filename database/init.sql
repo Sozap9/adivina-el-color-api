@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS scores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    player VARCHAR(30) NOT NULL,
+    points INT NOT NULL,
+    hits INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_player (player)
+);
