@@ -1,0 +1,14 @@
+$kind: http-request
+name: POST /scores (datos no válidos)
+url: "{{baseUrl}}/scores"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: '{ "player": "", "points": 10 }'
+scripts:
+  - type: afterResponse
+    code: pm.test("400 Bad Request", () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 2000

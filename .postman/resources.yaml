@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: fb56f3fa-008d-471c-b727-f5c00e0a4c70
+
+cloudResources:
+  collections:
+    ../postman/collections/Adivina el Color API: 5967a379-e440-4798-a1a7-68252536a659
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/
