@@ -4,9 +4,20 @@
         "slim/psr7": "^1.8",
         "predis/predis": "^3.7"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    },
     "autoload": {
         "psr-4": {
             "App\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }
