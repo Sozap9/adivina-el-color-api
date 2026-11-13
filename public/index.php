@@ -7,6 +7,7 @@ use App\Leaderboard;
 use App\RedisClient;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as Handler;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -14,6 +15,17 @@ require __DIR__ . '/../vendor/autoload.php';
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
 $app->addErrorMiddleware(true, true, true);
+$app->add(function (Request $request, Handler $handler): Response {
+    $response = $handler->handle($request);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', getenv('CORS_ORIGIN') ?: '*')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+});
+
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response;
+});
 
 function json(Response $response, mixed $data, int $status = 200): Response
 {
