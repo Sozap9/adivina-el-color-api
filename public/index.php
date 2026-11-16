@@ -36,6 +36,19 @@ function json(Response $response, mixed $data, int $status = 200): Response
     return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
 }
 
+$app->get('/', function (Request $request, Response $response) {
+    return json($response, [
+        'name' => 'Adivina el Color API',
+        'game' => 'https://sozap9.github.io/AdivinaElColor/',
+        'endpoints' => [
+            'GET /health',
+            'POST /scores',
+            'GET /leaderboard',
+            'GET /players/{name}',
+        ],
+    ]);
+});
+
 $app->get('/health', function (Request $request, Response $response) {
     return json($response, ['status' => 'ok']);
 });
