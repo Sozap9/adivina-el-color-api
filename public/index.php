@@ -5,16 +5,19 @@ declare(strict_types=1);
 use App\Database;
 use App\Leaderboard;
 use App\RedisClient;
+use App\ScoreInput;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as Handler;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
-$app->addErrorMiddleware(true, true, true);
+$app->addErrorMiddleware(getenv('APP_ENV') !== 'production', true, true);
+
 $app->add(function (Request $request, Handler $handler): Response {
     $response = $handler->handle($request);
     return $response
@@ -38,30 +41,23 @@ $app->get('/health', function (Request $request, Response $response) {
 });
 
 $app->post('/scores', function (Request $request, Response $response) {
-    $data = (array) $request->getParsedBody();
-    $player = trim((string) ($data['player'] ?? ''));
-    $points = $data['points'] ?? null;
-    $hits = $data['hits'] ?? 0;
+    $input = ScoreInput::fromArray((array) $request->getParsedBody());
 
-    if (
-        $player === '' || mb_strlen($player) > 30
-        || !is_int($points) || $points < 0
-        || !is_int($hits) || $hits < 0
-    ) {
+    if ($input === null) {
         return json($response, ['error' => 'Datos no válidos'], 400);
     }
 
     $db = Database::connect();
     $stmt = $db->prepare('INSERT INTO scores (player, points, hits) VALUES (:player, :points, :hits)');
-    $stmt->execute(['player' => $player, 'points' => $points, 'hits' => $hits]);
+    $stmt->execute(['player' => $input->player, 'points' => $input->points, 'hits' => $input->hits]);
 
-    (new Leaderboard(RedisClient::connect()))->submit($player, $points);
+    (new Leaderboard(RedisClient::connect()))->submit($input->player, $input->points);
 
     return json($response, [
         'id' => (int) $db->lastInsertId(),
-        'player' => $player,
-        'points' => $points,
-        'hits' => $hits,
+        'player' => $input->player,
+        'points' => $input->points,
+        'hits' => $input->hits,
     ], 201);
 });
 
@@ -86,6 +82,10 @@ $app->get('/players/{name}', function (Request $request, Response $response, arr
         'best' => max(array_column($scores, 'points')),
         'scores' => $scores,
     ]);
+});
+
+$app->map(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '/{routes:.+}', function (Request $request) {
+    throw new HttpNotFoundException($request);
 });
 
 $app->run();

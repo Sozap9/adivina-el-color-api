@@ -1,0 +1,9 @@
+.env.cloud
+.git
+vendor
+tests
+postman
+.postman
+practica.php
+.phpunit.result.cache
+docker-compose.yml
